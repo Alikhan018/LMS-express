@@ -1,0 +1,50 @@
+# Node modules
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# TypeScript
+*.d.ts
+*.map
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+*.lcov
+
+# Miscellaneous
+*.bak
+*.tmp
+
+# Debugger files
+*.pid
+*.seed
+
+# Prisma (if you're using it)
+prisma/migrations/
+prisma/.env
+
