@@ -1,0 +1,196 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  roleId   Int      @id @default(autoincrement())
+  roleName String
+  users    UserRole[]
+}
+
+model Group {
+  groupId   Int       @id @default(autoincrement())
+  groupName String
+  users     UserGroup[]
+}
+
+model Feature {
+  featureId    Int               @id @default(autoincrement())
+  featureName  String
+  entityType   String
+  entityFeatures EntityFeature[]
+}
+
+model EntityFeature {
+  featureId   Int       @id
+  entityName  String
+  entityId    Int
+  feature     Feature   @relation(fields: [featureId], references: [featureId])
+}
+
+model User {
+  userId         Int      @id @default(autoincrement())
+  fName          String
+  lName          String
+  mailingAddress String
+  email          String   @unique
+  phoneNo        Int
+  DOB            DateTime
+  secondaryPhone Int
+  profilePicture String
+  userType       UserType
+  student        Student?
+  teacher        Teacher?
+  roles          UserRole[]
+  groups         UserGroup[]
+}
+
+model UserRole {
+  userId Int
+  roleId Int
+  user   User   @relation(fields: [userId], references: [userId])
+  role   Role   @relation(fields: [roleId], references: [roleId])
+  
+  @@id([userId, roleId])
+}
+
+model UserGroup {
+  userId  Int
+  groupId Int
+  user    User    @relation(fields: [userId], references: [userId])
+  group   Group   @relation(fields: [groupId], references: [groupId])
+  
+  @@id([userId, groupId])
+}
+
+model Student {
+  rollNo     Int     @id @default(autoincrement())
+  userId     Int     @unique
+  user       User    @relation(fields: [userId], references: [userId])
+  enrollments Enrollment[]
+  assignments StudentAssignmentSubmission[]
+  quizzes     StudentQuizSubmission[]
+  courses     StudentCourse[]
+}
+
+model Teacher {
+  teacherId  Int    @id @default(autoincrement())
+  userId     Int    @unique
+  user       User   @relation(fields: [userId], references: [userId])
+  courses    Course[]
+  assignments Assignment[]
+  quizzes     Quiz[]
+
+  TeacherCourse TeacherCourse[]
+}
+
+model Assignment {
+  assignmentId   Int                   @id @default(autoincrement())
+  title          String
+  description    String
+  document       String
+  teacherId      Int
+  courseId       Int
+  teacher        Teacher               @relation(fields: [teacherId], references: [teacherId])
+  course         Course                @relation(fields: [courseId], references: [courseId])
+  studentAssignments StudentAssignmentSubmission[]
+}
+
+model StudentAssignmentSubmission {
+  submissionId   Int       @id @default(autoincrement())
+  studentId      Int
+  assignmentId   Int
+  grade          Float?
+  submissionDate DateTime
+  submissionFile String?
+  feedback       String?
+  student        Student   @relation(fields: [studentId], references: [rollNo])
+  assignment     Assignment @relation(fields: [assignmentId], references: [assignmentId])
+
+  @@unique([studentId, assignmentId])
+}
+
+model Quiz {
+  quizId     Int           @id @default(autoincrement())
+  title      String
+  description String
+  courseId   Int
+  teacherId  Int
+  course     Course        @relation(fields: [courseId], references: [courseId])
+  teacher    Teacher       @relation(fields: [teacherId], references: [teacherId])
+  questions  Question[]
+  quizAttempts StudentQuizSubmission[]
+}
+
+model StudentQuizSubmission {
+  attemptId    Int      @id @default(autoincrement())
+  studentId    Int
+  quizId       Int
+  score        Float?
+  attemptDate  DateTime
+  student      Student  @relation(fields: [studentId], references: [rollNo])
+  quiz         Quiz     @relation(fields: [quizId], references: [quizId])
+
+  @@unique([studentId, quizId])
+}
+
+model Question {
+  questionId   Int       @id @default(autoincrement())
+  quizId       Int
+  text         String
+  options      String[]
+  correctAnswer String
+  quiz         Quiz      @relation(fields: [quizId], references: [quizId])
+}
+
+model Course {
+  courseId     Int             @id @default(autoincrement())
+  courseName   String
+  creditHours  Int
+  teacherId    Int
+  teacher      Teacher         @relation(fields: [teacherId], references: [teacherId])
+  students     Enrollment[]
+  quizzes      Quiz[]
+  assignments  Assignment[]
+  StudentCourse StudentCourse[]
+  TeacherCourse TeacherCourse[]
+}
+
+model StudentCourse {
+  studentId    Int
+  courseId     Int
+  student      Student  @relation(fields: [studentId], references: [rollNo])
+  course       Course   @relation(fields: [courseId], references: [courseId])
+
+  @@id([studentId, courseId])
+}
+
+model TeacherCourse {
+  teacherId    Int
+  courseId     Int
+  teacher      Teacher  @relation(fields: [teacherId], references: [teacherId])
+  course       Course   @relation(fields: [courseId], references: [courseId])
+
+  @@id([teacherId, courseId])
+}
+
+model Enrollment {
+  enrollmentId  Int       @id @default(autoincrement())
+  studentId     Int
+  courseId      Int
+  enrollmentDate DateTime
+  student       Student  @relation(fields: [studentId], references: [rollNo])
+  course        Course   @relation(fields: [courseId], references: [courseId])
+  
+  @@unique([studentId, courseId])
+}
+
+enum UserType {
+  STUDENT
+  TEACHER
+}
